@@ -5,7 +5,7 @@ int VerificaPreço(const char *nomeArquivo) {
     FILE *arquivo = fopen(nomeArquivo, "r");
     
     if (arquivo == NULL) {
-        printf("Ainda não foi criado um arquivo com o preço do bilhete, por favor execute a etapa 4:");
+        printf("Ainda não foi criado um arquivo com o preço do bilhete, iniciando cadastro de preço.");
         
         return 0; // Retorna 0 para indicar que o arquivo não existe.
     }
@@ -110,27 +110,68 @@ void darBaixaNoBilhete(struct Bilhete bilhetes[], int id) {
 }
 
 int main() {
-    
-    struct Bilhete bilhetes[1000]; // Array para armazenar os bilhetes
-    int idAtual = 0; // Identificador do próximo bilhete a ser vendido
+ 
+struct Bilhete bilhetes[1000]; // Array para armazenar os bilhetes
+int idAtual;
+int IDretorno;
+ // Identificador do próximo bilhete a ser vendido
 
-    int escolha, tema, bilheteID;
-    char tipo;
-    
-    
+int escolha, tema, bilheteID;
+char tipo;    
 
-    do {
+	// Etapa para puxar o ultimo ID de bilhete utilizado para dar sequencia na venda
+static int onetime = 0; //
+
+if(onetime == 0){
+        
+    FILE *arq;
+    int IDretorno;
+    char linha[10000];
+    char caracter;
+    arq=fopen("Vendas.txt", "r");
+    //Verifica se o arquivo realmente existe então prossegue
+        if(arq != NULL){
+                
+            //Busca pelo arquivo o último valor do ID.
+            
+             while (fgets(linha, sizeof(linha), arq) != NULL) {
+                
+                caracter = linha[0];
+                
+                if(caracter == 'I'){
+                
+                    sscanf(linha, "%*[^0-9]%d%*[^0-9]", &IDretorno);
+                    idAtual = IDretorno + 1;
+                }
+                
+            }
+            fclose(arq);
+            
+            onetime = 1;
+            }
+            //Caso o arquivo não exista, atribue valor inicial.
+            if(arq == NULL){
+                
+                onetime = 1;
+                idAtual = 0;
+                
+            }
+    }
+
+
+
+do {
          // Verifica se já foi criado o arquivo de preços
-        if(VerificaPreço("Preço.txt") == 0)escolha = 4;
+        if(VerificaPreço("Preço.txt") == 0)escolha = 3;
             
         
         else{
         printf("\nMenu:\n");
-         printf("1 - Vender bilhete\n");
-          printf("2 - Dar baixa no bilhete\n");
-           printf("3 - Sair\n");
-            printf("4 - Inserir valor do bilhete:\n");
-             printf("Escolha uma opção: ");
+         printf("1 - Venda de bilhete\n");
+          printf("2 - Validação de bilhete\n");
+           printf("3 - Alterar valor do bilhete\n");
+            printf("4 - Finalizar programa:\n");
+             printf("Escolha uma opção ");
               scanf("%d", &escolha);
         }
 
@@ -177,23 +218,25 @@ int main() {
                  scanf("%d", &bilheteID);
                   darBaixaNoBilhete(bilhetes, bilheteID);
                    break;
-                   
-            case 3:
             
-                printf("Encerrando o programa.\n");
-                break;
-            case 4:
+            case 3:
             int invalor;
-            printf("\nDigite o valor do bilhete cheio: ");
+            printf("\n\nDigite o valor do bilhete cheio: R$");
             scanf("%d",&invalor);
             PreçoBilhete("Preço.txt", invalor);
             break;
+            
+            case 4:
+            
+                printf("Finalizando o programa.\n");
+                break;
+            
                 
             default:
             
                 printf("Opção inválida.\n");
         }
-    } while (escolha != 3);
+    } while (escolha != 4);
 
     return 0;
 }
