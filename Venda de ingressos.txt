@@ -1,0 +1,199 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int VerificaPreço(const char *nomeArquivo) {
+    FILE *arquivo = fopen(nomeArquivo, "r");
+    
+    if (arquivo == NULL) {
+        printf("Ainda não foi criado um arquivo com o preço do bilhete, por favor execute a etapa 4:");
+        
+        return 0; // Retorna 0 para indicar que o arquivo não existe.
+    }
+    
+    fclose(arquivo);
+    return 1; // Retorna 1 para indicar que o arquivo existe.
+}
+
+void PreçoBilhete(const char *nomeArquivo, int valordobilhete) {
+    // Abre o arquivo para escrita
+    FILE *arquivo = fopen(nomeArquivo, "w");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo para escrita.\n");
+        return;
+    }
+
+    // Escreva o número inteiro no arquivo
+    fprintf(arquivo, "%d", valordobilhete);
+
+    // Feche o arquivo
+    fclose(arquivo);
+}
+// Criação da estrutura de representação do bilhete de entrada. Sendo Identificação, Tipo, Tema do evento e Status do bilhete.
+struct Bilhete {
+    
+    int id; // Identificador único do bilhete.
+    char tipo; // Identifica o valor do bilhete em 'C' para cheio, 'M' para meia entrada, 'I' para isenção.
+    int tema; // Número do tema relacionado ao bilhete.
+    int status; // Verifica a situação do bilhete sendo: 0- não usado e 1- já utilizado.
+    int price;//Armazena o valor do bilhete;
+};
+
+void funsave(struct Bilhete bilhetes[], int *idAtual, char tipo, int tema, int status, int price) {
+    // Atualiza os valores do bilhete
+    bilhetes[*idAtual].id = *idAtual;
+    bilhetes[*idAtual].tipo = tipo;
+    bilhetes[*idAtual].tema = tema;
+    bilhetes[*idAtual].status = status;
+    bilhetes[*idAtual].price = price;
+
+    
+    FILE *arq;
+    arq = fopen("Vendas.txt", "a");
+
+    if (arq == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return;  
+    }
+
+    // Escreve no arquivo os valores do bilhete
+    fprintf(arq, "\nID: %d", bilhetes[*idAtual].id);
+     fprintf(arq, "\nTipo: %c", bilhetes[*idAtual].tipo);
+      fprintf(arq, "\nTema: %d", bilhetes[*idAtual].tema);
+       fprintf(arq, "\nStatus: %d", bilhetes[*idAtual].status);
+        fprintf(arq, "\nPreço: R$%d\n\n", bilhetes[*idAtual].price);
+
+    
+    fclose(arq);
+}
+
+//Função para leitura do valor do bilhete.
+int valorbilhete(int price){
+
+    FILE *arq;
+    int j;
+    int valretr[1];
+    arq=fopen("Preço.txt", "r");
+    for(int i =0;i<1;i++){
+    
+    valretr[i] = fscanf(arq, "%d", &j);
+    
+    }
+    fclose(arq);
+     return(j);
+}
+
+// Função recursiva para venda de bilhetes.
+void venderBilhete(struct Bilhete bilhetes[], int *idAtual, char tipo, int tema) {
+    if (*idAtual >= 1000) {
+        printf("Limite de bilhetes vendidos atingido.\n");
+        return;
+    }
+
+    bilhetes[*idAtual].id = *idAtual;
+    bilhetes[*idAtual].tipo = tipo;
+    bilhetes[*idAtual].tema = tema;
+    bilhetes[*idAtual].status = 0;
+
+    printf("Bilhete vendido com sucesso. ID do bilhete: %d\n", *idAtual);
+    (*idAtual)++;
+}
+
+// Função para dar baixa no bilhete quando um visitante entra no espaço do tema
+void darBaixaNoBilhete(struct Bilhete bilhetes[], int id) {
+    if (bilhetes[id].status) {
+        printf("Este bilhete já foi usado.\n");
+    } else {
+        bilhetes[id].status = 1;
+        printf("Baixa dada para o bilhete de ID %d.\n", id);
+    }
+}
+
+int main() {
+    
+    struct Bilhete bilhetes[1000]; // Array para armazenar os bilhetes
+    int idAtual = 0; // Identificador do próximo bilhete a ser vendido
+
+    int escolha, tema, bilheteID;
+    char tipo;
+    
+    
+
+    do {
+         // Verifica se já foi criado o arquivo de preços
+        if(VerificaPreço("Preço.txt") == 0)escolha = 4;
+            
+        
+        else{
+        printf("\nMenu:\n");
+         printf("1 - Vender bilhete\n");
+          printf("2 - Dar baixa no bilhete\n");
+           printf("3 - Sair\n");
+            printf("4 - Inserir valor do bilhete:\n");
+             printf("Escolha uma opção: ");
+              scanf("%d", &escolha);
+        }
+
+        switch (escolha) {
+            case 1:
+            int price;
+                printf("Tipo de bilhete (c - Cheia, m - Meia, i - Isenção): ");
+                 scanf(" %c", &tipo);
+                  if(tipo == 'c'){
+                    
+                     price = valorbilhete(price);
+                      printf("O valor do bilhete é de: R$%d\n", price);
+                    }
+                     else{
+                      if(tipo == 'm'){
+                        
+                       price = valorbilhete(price);
+                        price = price / 2;
+                          printf("O valor do bilhete é de: R$%d\n", price);
+                        }
+                         else{
+
+                          printf("Este bilhete não é cobrado.\n");
+                           price = 0;
+
+                            }
+                }
+                
+                printf("Escolha de temas: \n");
+                 printf("1 - 100 anos da Semana de Arte Moderna.\n");
+                  printf("2 - 150 anos de Santos Dumont.\n");
+                   printf("3 - Jogos Olímpicos de Paris 2024.\n");
+                    printf("4 - 522 anos da Descoberta do Brasil.\n");
+                     scanf("%d", &tema);
+                int status = 0;
+                funsave(bilhetes, &idAtual, tipo, tema,status, price);
+                venderBilhete(bilhetes, &idAtual, tipo, tema);
+                
+                break;
+                
+            case 2:
+            
+                printf("ID do bilhete para dar baixa: ");
+                 scanf("%d", &bilheteID);
+                  darBaixaNoBilhete(bilhetes, bilheteID);
+                   break;
+                   
+            case 3:
+            
+                printf("Encerrando o programa.\n");
+                break;
+            case 4:
+            int invalor;
+            printf("\nDigite o valor do bilhete cheio: ");
+            scanf("%d",&invalor);
+            PreçoBilhete("Preço.txt", invalor);
+            break;
+                
+            default:
+            
+                printf("Opção inválida.\n");
+        }
+    } while (escolha != 3);
+
+    return 0;
+}
